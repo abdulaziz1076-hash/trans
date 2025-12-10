@@ -19,7 +19,12 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// إعداد OpenAI API
+// إعداد OpenAI API باستخدام متغير البيئة
+if (!process.env.OPENAI_API_KEY) {
+  console.error("❌ مفتاح OpenAI API غير موجود! ضع OPENAI_API_KEY في Environment Variables على Render.");
+  process.exit(1); // إيقاف السيرفر إذا المفتاح مفقود
+}
+
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 app.use(cors());
@@ -54,4 +59,5 @@ app.post("/translate", upload.single("video"), async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+// تشغيل السيرفر
+app.listen(PORT, () => console.log(`✅ Server running at http://localhost:${PORT}`));
