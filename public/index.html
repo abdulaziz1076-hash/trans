@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مترجم الفيديو</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>مترجم الفيديو</h1>
+    <input type="file" id="videoFile" accept="video/*"><br>
+    <button onclick="translateVideo()">ترجم الفيديو</button>
+
+    <video id="video" controls></video>
+    <div id="translation"></div>
+  </div>
+
+  <script>
+    const videoInput = document.getElementById('videoFile');
+    const videoPlayer = document.getElementById('video');
+    const translationDiv = document.getElementById('translation');
+
+    videoInput.addEventListener('change', () => {
+      const file = videoInput.files[0];
+      if (file) videoPlayer.src = URL.createObjectURL(file);
+    });
+
+    function translateVideo() {
+      const file = videoInput.files[0];
+      if (!file) return alert('اختر فيديو أولاً!');
+
+      translationDiv.innerText = "جاري الترجمة...";
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      fetch('/translate', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => translationDiv.innerText = data.translation)
+      .catch(err => translationDiv.innerText = "خطأ في الترجمة: " + err.message);
+    }
+  </script>
+</body>
+</html>
