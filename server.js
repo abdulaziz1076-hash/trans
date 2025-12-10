@@ -22,15 +22,16 @@ const upload = multer({ storage });
 // إعداد OpenAI API
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// تمكين CORS
 app.use(cors());
-
-// تقديم ملفات static من مجلد public
 app.use(express.static('public'));
 
 // نقطة API لترجمة الفيديو
 app.post("/translate", upload.single("video"), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: "لم يتم رفع أي فيديو" });
+    }
+
     const filePath = req.file.path;
 
     const transcription = await openai.audio.transcriptions.create({
@@ -40,12 +41,17 @@ app.post("/translate", upload.single("video"), async (req, res) => {
     });
 
     fs.unlinkSync(filePath); // حذف الفيديو بعد الترجمة
-    res.json({ translation: transcription.text });
+
+    if (transcription && transcription.text) {
+      res.json({ translation: transcription.text });
+    } else {
+      res.json({ error: "لم يتمكن Whisper من استخراج النص" });
+    }
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    res.status(500).json({ error: "خطأ في الترجمة: " + err.message });
   }
 });
 
-// تشغيل السيرفر
 app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
