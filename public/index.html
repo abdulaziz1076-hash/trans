@@ -30,7 +30,7 @@
       const file = videoInput.files[0];
       if (!file) return alert('اختر فيديو أولاً!');
 
-      translationDiv.innerText = "جاري الترجمة...";
+      translationDiv.innerText = "جاري الترجمة... الرجاء الانتظار";
 
       const formData = new FormData();
       formData.append('video', file);
@@ -40,8 +40,14 @@
         body: formData
       })
       .then(res => res.json())
-      .then(data => translationDiv.innerText = data.translation)
-      .catch(err => translationDiv.innerText = "خطأ في الترجمة: " + err.message);
+      .then(data => {
+        if (data.translation) {
+          translationDiv.innerText = data.translation;
+        } else {
+          translationDiv.innerText = "حدث خطأ: " + (data.error || "غير معروف");
+        }
+      })
+      .catch(err => translationDiv.innerText = "خطأ في الاتصال بالسيرفر: " + err.message);
     }
   </script>
 </body>
